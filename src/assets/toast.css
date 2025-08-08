@@ -1,0 +1,41 @@
+.custom-toast {
+  border-radius: 8px;
+  font-size: 0.85rem;
+  min-height: auto;
+  padding: 6px 12px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+.custom-toast-body {
+  font-weight: 500;
+  color: #333;
+}
+
+
+.Vue-Toastification__toast *{
+  border-radius: 8px;
+  font-size: 0.55rem;
+  min-height: auto;
+  padding: 6px 12px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+.Vue-Toastification__toast--success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.Vue-Toastification__toast--error {
+  background-color: #f44336;
+  color: white;
+}
+
+.Vue-Toastification__toast--info {
+  background-color: #2196f3;
+  color: white;
+}
+
+.Vue-Toastification__toast--warning {
+  background-color: #ff9800;
+  color: white;
+}

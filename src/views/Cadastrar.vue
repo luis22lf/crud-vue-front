@@ -43,7 +43,8 @@
 
 
 <script setup lang="ts">
-    import Sair from '../components/Sair.vue'
+    import Sair from '../components/Sair.vue'//importa botão sair
+    import { useToast } from "vue-toastification";
 
     // Composição para usar variaveis reativas
     //Ref para variaveis, reactive para objetos
@@ -65,6 +66,8 @@
 
     const Cadastrar = async () => 
     {
+      const toast = useToast();
+
       if (aparelho.nome.trim() && aparelho.situacao.trim()) //verifica se os campos não estão vazios e trim() remove compos vazios no início e fim da string
       {
         try 
@@ -107,45 +110,23 @@
 
         } catch (error) 
         {
-          alert('Erro ao cadastrar: ' + (error as Error).message);
+          toast.error("Erro ao cadastrar: " + (error as Error).message);
+          //alert('Erro ao cadastrar: ' + (error as Error).message);
         }
       } 
       else 
       {
-        alert('Preencha todos os campos.');
+        toast.warning("Preencha todos os campos.");
+        //alert('Preencha todos os campos.');
       }
   };
 
-
-
-
-/*
-    const Cadastrar = () => 
-    {
-        if (aparelho.nome !== '' && aparelho.status !== '') 
-        {
-            const novoCadastro = `Aparelho: ${aparelho.nome} | Status: ${aparelho.status}`;
-            saida.value += (saida.value ? '\n' : '') + novoCadastro;
-
-            // Limpa os campos
-            aparelho.nome = '';
-            aparelho.status = '';
-
-            //injetando <li> no html com dados cadastrados
-            let listaCadastro = document.getElementById("ListaCadastro");
-            let cadastroNovo = document.createElement("li");
-
-            cadastroNovo.textContent = novoCadastro;
-            listaCadastro?.appendChild(cadastroNovo);
-
-        } else
-        {
-            alert('Por favor, preencha todos os campos.');
-        }
-    };
-*/
-
 </script>
+
+
+
+
+
 
 <style scoped>
 .container {

@@ -53,7 +53,9 @@
 <script setup lang="ts">// Importações necessárias
 import Sair from '../components/Sair.vue'
 import { ref, reactive, computed, onMounted } from 'vue';
-//import garbageIcon from '@/images/garbage.png'; // Importando imagem garbage
+import { h } from 'vue';//renderiza no vue HTML feito no script
+import { TYPE, useToast } from "vue-toastification";
+const toast = useToast(); // Inicializa o toast para exibir mensagens
 
 //----------------- Filtro -------------------------
 const searchText = ref('');//variavel bidirecional para armazenar o termo de busca
@@ -78,7 +80,7 @@ const aparelho = reactive({
 
 //array com todos aparelhos do banco de dados
 //foi feito com ref mas poderia ter sido reactive também
-//ambos são iguais co dif. que ref suporta qualquer tipo e reactive apenas objetos
+//ambos são iguais com dif. que ref suporta qualquer tipo e reactive apenas objetos
 const results = ref<Array<{id: number, nome: string, situacao: string}>>([]);
 
 
@@ -149,7 +151,8 @@ const Buscar = async () =>
     }
   catch (error) 
   {
-    alert('Erro ao buscar aparelhos: ' + (error as Error).message);
+    toast.error("Erro ao buscar aparelhos: " + (error as Error).message);
+    //alert('Erro ao buscar aparelhos: ' + (error as Error).message);
   }
 };
 
@@ -166,35 +169,97 @@ onMounted(() =>
 
 
 
+function mostrarToastConfirmacao(mensagem:string) {
+  toast(
+    {
+      render: () =>
+        h('div', { style: 'display: flex; flex-direction: column; gap: 8px;' }, [
+          h('span', mensagem),
+          h('div', { style: 'display: flex; gap: 8px;' }, [
+            h(
+              'button',
+              {
+                style: 'padding: 4px 8px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;',
+                onClick: () => {
+                  console.log('Usuário confirmou')
+                  toast.clear() // fecha todos os toasts
+                },
+              },
+              'Sim'
+            ),
+            h(
+              'button',
+              {
+                style: 'padding: 4px 8px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;',
+                onClick: () => {
+                  console.log('Usuário cancelou')
+                  toast.clear()
+                },
+              },
+              'Não'
+            ),
+          ]),
+        ]),
+    },
+    {
+      //type: 'default', // Tipo de toast
+      timeout: false, // não some sozinho
+      closeOnClick: false, // evita fechar clicando fora
+      draggable: false,
+    }
+  )
+}
+
+
+
+function mensagemConfirma(mensagem:string) {
+    return new Promise((resolve) => 
+    {
+      // Versão simples com confirm()
+      //const resultado = confirm(mensagem);
+      const resultado = mostrarToastConfirmacao(mensagem);
+      resolve(resultado);
+    });
+}
+
 //**************Delete*********************** */
 
 //função disparada no evento de clique no ícone de excluir em cada aparelho
 //exclui item no banco de dados
 const excluirAparelho = async (aparelhoId: number) => 
 {
-  try 
+  const resposta = await(mensagemConfirma("Deseja excluir este item ?"));
+
+  if (resposta)//FALTA DEFINIR LOGICA DE RESPOSTA DENTRO DO TOAST
   {
-    const response = await fetch(`http://localhost:3000/api/equipamentos/Deletar/${aparelhoId}`, {
-      method: 'DELETE', // Método DELETE para excluir o aparelho
-      headers: 
-      {
-        'Content-Type': 'application/json' // Tipo de conteúdo JSON
-      }
-    });
-
-    console.log('Aparelho excluído com sucesso:', aparelhoId);
-
-    if (!response.ok) 
+    try 
     {
-      const err = await response.json();
-      throw new Error(err.error || 'Erro desconhecido');
-    }
+      const response = await fetch(`http://localhost:3000/api/equipamentos/Deletar/${aparelhoId}`, {
+        method: 'DELETE', // Método DELETE para excluir o aparelho
+        headers: 
+        {
+          'Content-Type': 'application/json' // Tipo de conteúdo JSON
+        }
+      });
 
-    // Atualiza a lista de aparelhos após a exclusão
-    Buscar();
-  } catch (error) 
+      console.log('Aparelho excluído com sucesso:', aparelhoId);
+
+      if (!response.ok) 
+      {
+        const err = await response.json();
+        throw new Error(err.error || 'Erro desconhecido');
+      }
+
+      // Atualiza a lista de aparelhos após a exclusão
+      Buscar();
+    } catch (error) 
+    {
+      alert('Erro ao excluir aparelho: ' + (error as Error).message);
+    }
+  }
+  else
   {
-    alert('Erro ao excluir aparelho: ' + (error as Error).message);
+    console.log("clicou em cancelar");
   }
 };
 
@@ -202,15 +267,6 @@ const excluirAparelho = async (aparelhoId: number) =>
 
 
 //**************PUT*********************** */
-
-function mensagemConfirma(mensagem:string) {
-    return new Promise((resolve) => 
-    {
-      // Versão simples com confirm()
-      const resultado = confirm(mensagem);
-      resolve(resultado);
-    });
-}
 
 const confirmaEdicao = async (aparelhoId: number) => 
 {
