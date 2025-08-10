@@ -1,17 +1,6 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth'
-
-const router = useRouter();
-const auth = useAuthStore();
-
-const handleSair = () => 
-{
-  console.log('clicked');
-  auth.logout() // Altera o estado global
-  router.push('/');
-}
-
+import { useAuthActions } from '@/utils/logoutSair.ts';
+const { handleSair } = useAuthActions();
 </script>
 
 <template>

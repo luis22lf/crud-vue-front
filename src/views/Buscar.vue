@@ -53,8 +53,8 @@
 <script setup lang="ts">// Importações necessárias
 import Sair from '../components/Sair.vue'
 import { ref, reactive, computed, onMounted } from 'vue';
-import { h } from 'vue';//renderiza no vue HTML feito no script
-import { TYPE, useToast } from "vue-toastification";
+import { useToast } from "vue-toastification";
+import { showConfirmToast } from '@/utils/showConfirmToast'
 const toast = useToast(); // Inicializa o toast para exibir mensagens
 
 //----------------- Filtro -------------------------
@@ -111,44 +111,7 @@ const Buscar = async () =>
     
     console.log('Dados recebidos convertidos em json:', data); //exibe no console os dados recebidos
     results.value = data; //armazena os dados recebidos na variável results
-
-    //LOGICA USANDO DOM (DESCONTINUEI...)
-    /*   // Limpa a lista antes de adicionar novos itens
-    const listaCadastro = document.getElementById("ListaCadastro");
-    if (listaCadastro) 
-    {
-      listaCadastro.innerHTML = ''; // Limpa a lista existente
-    }
-    // Adiciona cada aparelho como um item de lista
-    data.forEach((aparelho: { id: number; nome: string; situacao: string }) => 
-    {
-      const cadastroNovo: HTMLElement = document.createElement("li");
-      const novoCadastro: string = `ID: ${aparelho.id} | Aparelho: ${aparelho.nome} | Situação: ${aparelho.situacao}`;
-      cadastroNovo.textContent = novoCadastro;
-      cadastroNovo.className = "aparelho-item"; // Adiciona uma classe para estilização
-      cadastroNovo.id = `aparelho-${aparelho.id.toString()}`; // Define um ID único para cada item da lista
-      
-      
-      // Cria o icone excluir para cada aparelho
-      const excluir: HTMLImageElement = document.createElement("img");
-      excluir.src = garbageIcon; // Defina o caminho para o ícone de excluir
-      excluir.alt = "Excluir";//texto alternativo para o ícone
-      excluir.className = "aparelho-excluir";
-      excluir.id = `excluir-${aparelho.id.toString()}`; // Define um ID único para o ícone de excluir
-      
-      //Adicionado css aqui por não puxar o css do <style>
-      excluir.style.cssText = `
-        width: 24px;
-        height: 24px;
-        cursor: pointer;
-        margin-left: 10px;
-        object-fit: contain;
-      `;
-      cadastroNovo?.appendChild(excluir); // Adiciona o ícone de excluir ao item da lista
-    
-      listaCadastro?.appendChild(cadastroNovo); // Adiciona o novo item à lista
-   */
-    }
+  }
   catch (error) 
   {
     toast.error("Erro ao buscar aparelhos: " + (error as Error).message);
@@ -157,70 +120,20 @@ const Buscar = async () =>
 };
 
 
+
 // Função Buscar é chamada quando o componente é montado
 // Isso garante que os aparelhos sejam carregados assim que a página for acessada.
-// O onMounted é um hook do Vue que executa a função quando o componente é mont
-// Chama a função Buscar quando o componente é montado
+// O onMounted é um hook do Vue que executa a função quando o componente é montado
 onMounted(() => 
 {
-  Buscar();
+  Buscar();// Chama a função Buscar quando o componente é montado
 });
 
 
 
 
-function mostrarToastConfirmacao(mensagem:string) {
-  toast(
-    {
-      render: () =>
-        h('div', { style: 'display: flex; flex-direction: column; gap: 8px;' }, [
-          h('span', mensagem),
-          h('div', { style: 'display: flex; gap: 8px;' }, [
-            h(
-              'button',
-              {
-                style: 'padding: 4px 8px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;',
-                onClick: () => {
-                  console.log('Usuário confirmou')
-                  toast.clear() // fecha todos os toasts
-                },
-              },
-              'Sim'
-            ),
-            h(
-              'button',
-              {
-                style: 'padding: 4px 8px; background: #f44336; color: white; border: none; border-radius: 4px; cursor: pointer;',
-                onClick: () => {
-                  console.log('Usuário cancelou')
-                  toast.clear()
-                },
-              },
-              'Não'
-            ),
-          ]),
-        ]),
-    },
-    {
-      //type: 'default', // Tipo de toast
-      timeout: false, // não some sozinho
-      closeOnClick: false, // evita fechar clicando fora
-      draggable: false,
-    }
-  )
-}
 
 
-
-function mensagemConfirma(mensagem:string) {
-    return new Promise((resolve) => 
-    {
-      // Versão simples com confirm()
-      //const resultado = confirm(mensagem);
-      const resultado = mostrarToastConfirmacao(mensagem);
-      resolve(resultado);
-    });
-}
 
 //**************Delete*********************** */
 
@@ -228,7 +141,7 @@ function mensagemConfirma(mensagem:string) {
 //exclui item no banco de dados
 const excluirAparelho = async (aparelhoId: number) => 
 {
-  const resposta = await(mensagemConfirma("Deseja excluir este item ?"));
+  const resposta = await(showConfirmToast("Deseja excluir este item ?"));
 
   if (resposta)//FALTA DEFINIR LOGICA DE RESPOSTA DENTRO DO TOAST
   {
@@ -270,7 +183,7 @@ const excluirAparelho = async (aparelhoId: number) =>
 
 const confirmaEdicao = async (aparelhoId: number) => 
 {
-  const resposta = await(mensagemConfirma("Deseja editar este item ?"));
+  const resposta = await(showConfirmToast("Deseja editar este item ?"));
 
   if (resposta)
   {
