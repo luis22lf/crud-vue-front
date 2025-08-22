@@ -3,11 +3,46 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth'
+import { useToast } from "vue-toastification";
 
 const auth = useAuthStore();
 const router = useRouter();
 const username = ref('');
 const password = ref('');
+
+
+async function enviaLogin(login: string, senha: string){
+  const toast = useToast();
+  try{
+    const response = await fetch('http://localhost:3000/api/users/Login',
+    {
+      method: 'POST', //método
+      headers: 
+      {
+          'Content-Type': 'application/json' //tipo de conteudo que será enviado (json)
+      },
+      body: JSON.stringify //converte javascript para json
+      ({
+          //conteudo convertido a ser enviado...
+          login: login,
+          senha: senha
+      })
+    });
+    if (!response.ok) //se deu erro
+    {
+      const err = await response.json();
+      throw new Error(err.error || 'Erro desconhecido');
+    }
+
+    const data = await response.json();
+    console.log("Login realizado com sucesso:", data);
+    auth.login(); // Altera o estado global
+    router.push('/cadastro');// Redireciona para a página de cadastro
+  }
+  catch (error) {
+    toast.error("Erro ao logar: " + (error as Error).message);
+  }
+}
 
 function validaEmail(email: string): boolean 
 {
@@ -41,8 +76,7 @@ const handleLogin = () => {
     borderColorSenha.value = '#030303'; // Reseta a cor se a senha for válida
   }
 
-  auth.login(); // Altera o estado global
-  router.push('/cadastro');// Redireciona para a página de cadastro
+  enviaLogin(username.value, password.value);
 };
 </script>
 
