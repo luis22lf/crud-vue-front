@@ -43,82 +43,88 @@
 
 
 <script setup lang="ts">
-    import Sair from '../components/Sair.vue'//importa botão sair
-    import { useToast } from "vue-toastification";
+  import Sair from '../components/Sair.vue'//importa botão sair
+  import { useToast } from "vue-toastification";
+  import { useRouter } from 'vue-router';
+  const toast = useToast();
+  const router = useRouter();
 
-    // Composição para usar variaveis reativas
-    //Ref para variaveis, reactive para objetos
-    import { ref, reactive, computed } from 'vue';
+  // Composição para usar variaveis reativas
+  //Ref para variaveis, reactive para objetos
+  import { ref, reactive, computed } from 'vue';
 
-    // Define objeto reativo aparelho
-    const aparelho = reactive({
-        nome: '',
-        situacao: ''
-    });
+  // Define objeto reativo aparelho
+  const aparelho = reactive({
+      nome: '',
+      situacao: ''
+  });
 
 
 
-    // Texto que exibe os dados cadastrados
-    const saida = ref<string>('');
-    // ------ Fim da composição -----------------
+  // Texto que exibe os dados cadastrados
+  const saida = ref<string>('');
+  // ------ Fim da composição -----------------
 
-    // Cadastrar
+  // Cadastrar
 
-    const Cadastrar = async () => 
+  const Cadastrar = async () => 
+  {
+    if (aparelho.nome.trim() && aparelho.situacao.trim()) //verifica se os campos não estão vazios e trim() remove compos vazios no início e fim da string
     {
-      const toast = useToast();
-
-      if (aparelho.nome.trim() && aparelho.situacao.trim()) //verifica se os campos não estão vazios e trim() remove compos vazios no início e fim da string
+      try 
       {
-        try 
+        const token = localStorage.getItem('token'); //pega token do local storage
+        const response = await fetch('http://localhost:3000/api/equipamentos/Cadastro', //requisição
         {
-          const response = await fetch('http://localhost:3000/api/equipamentos/Cadastro', //requisição
+          method: 'POST', //método
+          headers: 
           {
-            method: 'POST', //método
-            headers: 
-            {
-                'Content-Type': 'application/json' //tipo de conteudo que será enviado (json)
-            },
-            body: JSON.stringify //converte javascript para json
-            ({
-                //conteudo convertido a ser enviado...
-                nome: aparelho.nome,
-                situacao: aparelho.situacao
-            })
-          });
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json' //tipo de conteudo que será enviado (json)
+          },
+          body: JSON.stringify //converte javascript para json
+          ({
+              //conteudo convertido a ser enviado...
+              nome: aparelho.nome,
+              situacao: aparelho.situacao
+          })
+        });
 
-          if (!response.ok) //se deu erro
-          {
-            const err = await response.json();
-            throw new Error(err.error || 'Erro desconhecido');
-          }
-
-          const data = await response.json();//resposta do servidor
-
-          saida.value += `Aparelho: ${data.data.nome} | Situação: ${data.data.situacao}\n`;
-
-          //injetando <li> no html com dados cadastrados
-              let listaCadastro = document.getElementById("ListaCadastro");
-              let cadastroNovo = document.createElement("li");
-
-              const novoCadastro = `Aparelho: ${aparelho.nome} | Situação: ${aparelho.situacao}`;
-              cadastroNovo.textContent = novoCadastro;
-              listaCadastro?.appendChild(cadastroNovo);
-
-          aparelho.nome = '';
-          aparelho.situacao = '';
-
-        } catch (error) 
+        if (!response.ok) //se deu erro
         {
-          toast.error("Erro ao cadastrar: " + (error as Error).message);
-          //alert('Erro ao cadastrar: ' + (error as Error).message);
+          const err = await response.json();
+          throw new Error(err.error || 'Erro desconhecido');
         }
-      } 
-      else 
+
+        const data = await response.json();//resposta do servidor
+
+        saida.value += `Aparelho: ${data.data.nome} | Situação: ${data.data.situacao}\n`;
+
+        //injetando <li> no html com dados cadastrados
+            let listaCadastro = document.getElementById("ListaCadastro");
+            let cadastroNovo = document.createElement("li");
+
+            const novoCadastro = `Aparelho: ${aparelho.nome} | Situação: ${aparelho.situacao}`;
+            cadastroNovo.textContent = novoCadastro;
+            listaCadastro?.appendChild(cadastroNovo);
+
+        aparelho.nome = '';
+        aparelho.situacao = '';
+
+      } catch (error) 
       {
-        toast.warning("Preencha todos os campos.");
-        //alert('Preencha todos os campos.');
+        if((error as Error).message == 'Token inválido')
+        {
+          router.push('/');
+        }
+        toast.error("Erro ao cadastrar: " + (error as Error).message);
       }
+    } 
+    else 
+    {
+      toast.warning("Preencha todos os campos.");
+      //alert('Preencha todos os campos.');
+    }
   };
 
 </script>

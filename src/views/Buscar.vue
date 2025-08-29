@@ -55,7 +55,9 @@ import Sair from '../components/Sair.vue'
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useToast } from "vue-toastification";
 import { showConfirmToast } from '@/utils/showConfirmToast'
+import { useRouter } from 'vue-router';
 const toast = useToast(); // Inicializa o toast para exibir mensagens
+const router = useRouter();
 
 //----------------- Filtro -------------------------
 const searchText = ref('');//variavel bidirecional para armazenar o termo de busca
@@ -84,6 +86,8 @@ const aparelho = reactive({
 const results = ref<Array<{id: number, nome: string, situacao: string}>>([]);
 
 
+const token = localStorage.getItem('token');
+
 
 // Função para buscar aparelhos
 // Essa função faz uma requisição GET para o servidor para buscar todos os aparelhos cadastrados
@@ -97,6 +101,7 @@ const Buscar = async () =>
       method: 'GET', //método
       headers: 
       {
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json' //tipo de conteudo que será enviado (json)
       }
     });
@@ -115,7 +120,10 @@ const Buscar = async () =>
   catch (error) 
   {
     toast.error("Erro ao buscar aparelhos: " + (error as Error).message);
-    //alert('Erro ao buscar aparelhos: ' + (error as Error).message);
+    if((error as Error).message == 'Token inválido')
+    {
+      router.push('/');
+    }
   }
 };
 
@@ -143,7 +151,7 @@ const excluirAparelho = async (aparelhoId: number) =>
 {
   const resposta = await(showConfirmToast("Deseja excluir este item ?"));
 
-  if (resposta)//FALTA DEFINIR LOGICA DE RESPOSTA DENTRO DO TOAST
+  if (resposta)
   {
     try 
     {
@@ -151,6 +159,7 @@ const excluirAparelho = async (aparelhoId: number) =>
         method: 'DELETE', // Método DELETE para excluir o aparelho
         headers: 
         {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json' // Tipo de conteúdo JSON
         }
       });
@@ -167,7 +176,11 @@ const excluirAparelho = async (aparelhoId: number) =>
       Buscar();
     } catch (error) 
     {
-      alert('Erro ao excluir aparelho: ' + (error as Error).message);
+      if((error as Error).message == 'Token inválido')
+      {
+        router.push('/');
+      }
+      toast.error('Erro ao excluir aparelho: ' + (error as Error).message);
     }
   }
   else
@@ -207,6 +220,7 @@ const confirmaEdicao = async (aparelhoId: number) =>
           method: 'PUT', // Método PUT para editar o aparelho
           headers: 
           {
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json' // Tipo de conteúdo JSON
           },
           body: JSON.stringify //converte javascript para json
@@ -230,7 +244,11 @@ const confirmaEdicao = async (aparelhoId: number) =>
       }
       catch (error) 
       {
-        alert('Erro ao excluir aparelho: ' + (error as Error).message);
+        if((error as Error).message == 'Token inválido')
+        {
+          router.push('/');
+        }
+        toast.error('Erro ao excluir aparelho: ' + (error as Error).message);
       }
     }
       

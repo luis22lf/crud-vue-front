@@ -36,8 +36,20 @@ async function enviaLogin(login: string, senha: string){
 
     const data = await response.json();
     console.log("Login realizado com sucesso:", data);
-    auth.login(); // Altera o estado global
-    router.push('/cadastro');// Redireciona para a página de cadastro
+    console.log("token:", data.token);
+
+    // Armazena o token no localStorage
+    localStorage.setItem('token', data.token);
+
+    const token = localStorage.getItem('token');
+    console.log('token-front-end:', token);
+    //Verificação - só efetua login se o token existir
+    if (token) {
+      auth.login(); // Altera o estado global
+      router.push('/cadastro');// Redireciona para a página de cadastro
+    } else {
+      toast.error("Login falhou: Token inválido");
+    }
   }
   catch (error) {
     toast.error("Erro ao logar: " + (error as Error).message);
