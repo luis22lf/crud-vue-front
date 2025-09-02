@@ -1,12 +1,8 @@
 
 <script setup lang="ts">
-import { RouterLink, RouterView, useRoute } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-import { computed, ref } from 'vue';
-import Login from './views/Login.vue';
+import { RouterLink, RouterView } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-const route = useRoute();
 const auth = useAuthStore();
 
 </script>

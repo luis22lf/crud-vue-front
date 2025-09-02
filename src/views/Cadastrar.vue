@@ -51,7 +51,7 @@
 
   // Composição para usar variaveis reativas
   //Ref para variaveis, reactive para objetos
-  import { ref, reactive, computed } from 'vue';
+  import { ref, reactive } from 'vue';
 
   // Define objeto reativo aparelho
   const aparelho = reactive({

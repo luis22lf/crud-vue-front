@@ -319,6 +319,11 @@ ul#ListaCadastro li {
   align-items: center; /* Alinha verticalmente */
 }
 
+/* Estilo dos rótulos */
+label {
+  color: #333;
+}
+
 /*input de informações do aparelho */
 .info-aparelho {
   height: 5vh;

@@ -150,6 +150,7 @@ form div {
 label {
   display: block;
   margin-bottom: 0.5rem;
+  color: #333;
 }
 input {
   width: 100%;
