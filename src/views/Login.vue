@@ -37,12 +37,18 @@ async function enviaLogin(login: string, senha: string){
     const data = await response.json();
     console.log("Login realizado com sucesso:", data);
     console.log("token:", data.token);
+    console.log("tokenValido:", data.tokenValido);
+    console.log("refreshToken:", data.refreshToken);
+    console.log("refreshTokenValido:", data.refreshTokenValido);
 
     // Armazena o token no localStorage
     localStorage.setItem('token', data.token);
+    localStorage.setItem('refreshToken', data.refreshToken);
 
     const token = localStorage.getItem('token');
     console.log('token-front-end:', token);
+    const refreshtoken = localStorage.getItem('refreshToken');
+    console.log('refreshToken-front-end:', refreshtoken);
     //Verificação - só efetua login se o token existir
     if (token) {
       auth.login(); // Altera o estado global
