@@ -87,6 +87,7 @@ const results = ref<Array<{id: number, nome: string, situacao: string}>>([]);
 
 
 const token = localStorage.getItem('token');
+const refreshToken = localStorage.getItem('refreshToken');
 
 
 // Função para buscar aparelhos
@@ -119,6 +120,41 @@ const Buscar = async () =>
   }
   catch (error) 
   {
+    if ((error as Error).message == 'Token expirado')
+    {
+      toast.warning("Credenciais expiradas. Gerando novo token...");
+
+      //AQUI VAI CHAMAR A FUNÇÃO DE RENOVAR O TOKEN...
+      try 
+      {
+        const response = await fetch('http://localhost:3000/api/users/RenovarToken', //requisição
+        {
+          method: 'POST', //método
+          headers: 
+          {
+            'Authorization': `Bearer ${refreshToken}`,
+            'Content-Type': 'application/json' //tipo de conteudo que será enviado (json)
+          }
+        });
+
+        if (!response.ok) //se deu erro
+        {
+          const err = await response.json();
+          throw new Error(err.error || 'Erro desconhecido');
+        }
+
+        const data = await response.json();//resposta do servidor
+        console.log('Novo token recebido:', data); //exibe no console os dados recebidos
+
+        // Armazena o novo token no localStorage
+        localStorage.setItem('token', data.token);
+
+        //RETOMAR CODIGO A PARTIR DAQUI
+      } catch (error)
+      {
+        toast.error("Falha ao renovar token: " + (error as Error).message);
+      }
+    }
     toast.error("Erro ao buscar aparelhos: " + (error as Error).message);
     if((error as Error).message == 'Token inválido')
     {
