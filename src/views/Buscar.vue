@@ -56,6 +56,7 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useToast } from "vue-toastification";
 import { showConfirmToast } from '@/utils/showConfirmToast'
 import { useRouter } from 'vue-router';
+import { renovarToken } from '@/utils/renovarToken' // Importa a função de renovar token
 const toast = useToast(); // Inicializa o toast para exibir mensagens
 const router = useRouter();
 
@@ -124,44 +125,33 @@ const Buscar = async () =>
     {
       toast.warning("Credenciais expiradas. Gerando novo token...");
 
-      //AQUI VAI CHAMAR A FUNÇÃO DE RENOVAR O TOKEN...
-      try 
-      {
-        const response = await fetch('http://localhost:3000/api/users/RenovarToken', //requisição
-        {
-          method: 'POST', //método
-          headers: 
-          {
-            'Authorization': `Bearer ${refreshToken}`,
-            'Content-Type': 'application/json' //tipo de conteudo que será enviado (json)
-          }
-        });
+      try{
+        const newToken = await renovarToken();
 
-        if (!response.ok) //se deu erro
+        if (newToken) 
         {
-          const err = await response.json();
-          throw new Error(err.error || 'Erro desconhecido');
+          toast.success("Token renovado com sucesso!");
+        } 
+        else 
+        {
+          throw new Error('Falha ao renovar token');
         }
-
-        const data = await response.json();//resposta do servidor
-        console.log('Novo token recebido:', data); //exibe no console os dados recebidos
-
-        // Armazena o novo token no localStorage
-        localStorage.setItem('token', data.token);
-
-        //RETOMAR CODIGO A PARTIR DAQUI
-      } catch (error)
+      }
+      catch(error)
       {
         toast.error("Falha ao renovar token: " + (error as Error).message);
+        console.log("error.message da funcao: " + (error as Error).message);
+        if((error as Error).message == 'Falha ao renovar token')
+        {
+          router.push('/');
+        }
       }
+
     }
     toast.error("Erro ao buscar aparelhos: " + (error as Error).message);
-    if((error as Error).message == 'Token inválido')
-    {
-      router.push('/');
-    }
   }
 };
+
 
 
 
@@ -212,9 +202,31 @@ const excluirAparelho = async (aparelhoId: number) =>
       Buscar();
     } catch (error) 
     {
-      if((error as Error).message == 'Token inválido')
+      if ((error as Error).message == 'Token expirado')
       {
-        router.push('/');
+        toast.warning("Credenciais expiradas. Gerando novo token...");
+
+        try{
+          const newToken = await renovarToken();
+
+          if (newToken) 
+          {
+            toast.success("Token renovado com sucesso!");
+          } 
+          else 
+          {
+            throw new Error('Falha ao renovar token');
+          }
+        }
+        catch(error)
+        {
+          toast.error("Falha ao renovar token: " + (error as Error).message);
+          console.log("error.message da funcao: " + (error as Error).message);
+          if((error as Error).message == 'Falha ao renovar token')
+          {
+            router.push('/');
+          }
+        }
       }
       toast.error('Erro ao excluir aparelho: ' + (error as Error).message);
     }
@@ -280,9 +292,31 @@ const confirmaEdicao = async (aparelhoId: number) =>
       }
       catch (error) 
       {
-        if((error as Error).message == 'Token inválido')
+        if ((error as Error).message == 'Token expirado')
         {
-          router.push('/');
+          toast.warning("Credenciais expiradas. Gerando novo token...");
+
+          try{
+            const newToken = await renovarToken();
+
+            if (newToken) 
+            {
+              toast.success("Token renovado com sucesso!");
+            } 
+            else 
+            {
+              throw new Error('Falha ao renovar token');
+            }
+          }
+          catch(error)
+          {
+            toast.error("Falha ao renovar token: " + (error as Error).message);
+            console.log("error.message da funcao: " + (error as Error).message);
+            if((error as Error).message == 'Falha ao renovar token')
+            {
+              router.push('/');
+            }
+          }
         }
         toast.error('Erro ao excluir aparelho: ' + (error as Error).message);
       }

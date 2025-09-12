@@ -46,6 +46,7 @@
   import Sair from '../components/Sair.vue'//importa botão sair
   import { useToast } from "vue-toastification";
   import { useRouter } from 'vue-router';
+  import { renovarToken } from '@/utils/renovarToken' // Importa a função de renovar token
   const toast = useToast();
   const router = useRouter();
 
@@ -113,9 +114,31 @@
 
       } catch (error) 
       {
-        if((error as Error).message == 'Token inválido')
+        if ((error as Error).message == 'Token expirado')
         {
-          router.push('/');
+          toast.warning("Credenciais expiradas. Gerando novo token...");
+
+          try{
+            const newToken = await renovarToken();
+
+            if (newToken) 
+            {
+              toast.success("Token renovado com sucesso!");
+            } 
+            else 
+            {
+              throw new Error('Falha ao renovar token');
+            }
+          }
+          catch(error)
+          {
+            toast.error("Falha ao renovar token: " + (error as Error).message);
+            console.log("error.message da funcao: " + (error as Error).message);
+            if((error as Error).message == 'Falha ao renovar token')
+            {
+              router.push('/');
+            }
+          }
         }
         toast.error("Erro ao cadastrar: " + (error as Error).message);
       }
